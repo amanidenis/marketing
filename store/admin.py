@@ -1,9 +1,15 @@
 from django.contrib import admin
-from .models import Product  # Ensure this matches the correct import
+from .models import Product, Variations
 
-# Register your models here.
-class ProductAdmin(admin.ModelAdmin):  # Class names should be in CamelCase
+class ProductAdmin(admin.ModelAdmin):
     list_display = ('product_name', 'price', 'stock', 'category', 'modified_date', 'is_available')
-    prepopulated_fields = {'slug': ('product_name',)}  # Fixed spelling
+    prepopulated_fields = {'slug': ('product_name',)}
 
-admin.site.register(Product, ProductAdmin)  # Ensure this matches the correct class names
+admin.site.register(Product, ProductAdmin)
+
+class VariationsAdmin(admin.ModelAdmin):
+    list_display = ('product', 'variation_category', 'variation_value', 'is_active', 'created_date')
+    list_filter = ('product', 'variation_category', 'is_active')
+    list_editable = ('is_active',)
+
+admin.site.register(Variations, VariationsAdmin)

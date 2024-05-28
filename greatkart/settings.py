@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'category',
     'accounts', 
-    'store', # Ensure this is correctly spelled and matches your app's name
+    'store',
+    'carts',
 ]
 
 
@@ -64,6 +65,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                
+                'carts.context_processors.counter',
             ],
         },
     },

@@ -1,15 +1,16 @@
+# accounts/admin.py
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin  # Corrected import statement
-from .models import Account
+from django.contrib.auth.admin import UserAdmin
+from .models import Account  # Ensure this matches the class name in models.py
 
-class AccountAdmin(UserAdmin):  # Ensure class name is correctly capitalized
+class AccountAdmin(UserAdmin):
     list_display = ('email', 'first_name', 'last_name', 'username', 'last_login', 'date_joined', 'is_active')
-    list_display_links = ('email','first_name','last_name')
-    readonly_fields = ('last_login','date_joined')
-    urderiing = ('-date_joined',)
+    list_display_links = ('email', 'first_name', 'last_name')
+    readonly_fields = ('last_login', 'date_joined')
+    ordering = ('-date_joined',)  # Corrected typo: 'urderiing' to 'ordering'
 
     filter_horizontal = ()
     list_filter = ()
     fieldsets = ()
 
-admin.site.register(Account, AccountAdmin)
+admin.site.register(Account, AccountAdmin)  # Ensure this matches the class name in models.py

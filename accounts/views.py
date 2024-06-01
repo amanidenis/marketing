@@ -9,7 +9,9 @@ from django.core.mail import EmailMessage
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm, LoginForm
 from .models import Account
-from .forms import ForgotPasswordForm
+from carts.views import _cart_id
+from carts.models import Cart, CartItem
+import requests
 
 def register(request):
     if request.method == 'POST':
@@ -87,14 +89,60 @@ def login(request):
             user = auth.authenticate(email=email, password=password)
 
             if user is not None:
+                try:
+                    cart = Cart.objects.get(cart_id=_cart_id(request))
+                    is_cart_item_exists = CartItem.objects.filter(cart=cart).exists()
+                    if is_cart_item_exists:
+                        cart_items = CartItem.objects.filter(cart=cart)
+                        product_variation = []
+                        for item in cart_items:
+                            variation = item.variations.all()
+                            product_variation.append(list(variation))
+
+                        cart_items = CartItem.objects.filter(user=user)
+                        ex_var_list = []
+                        id_list = []
+                        for item in cart_items:
+                            existing_variation = item.variations.all()
+                            ex_var_list.append(list(existing_variation))
+                            id_list.append(item.id)
+
+                        for pr in product_variation:
+                            if pr in ex_var_list:
+                                index = ex_var_list.index(pr)
+                                item_id = id_list[index]
+                                item = CartItem.objects.get(id=item_id)
+                                item.quantity += 1
+                                item.user = user
+                                item.save()
+                            else:
+                                cart_items = CartItem.objects.filter(cart=cart)
+                                for item in cart_items:
+                                    item.user = user
+                                    item.save()
+                except Exception as e:
+                    print(e)  # Log the exception for debugging
                 auth.login(request, user)
                 messages.success(request, 'You are now logged in.')
-                return redirect('dashboard')
+                url = request.META.get('HTTP_REFERER', None)
+                try:
+                    if url:
+                        query = requests.utils.urlparse(url).query
+                        
+                        params = dict(x.split('=') for x in query.split('&'))
+                        if 'next' in parms:
+                            nextPage = params['next']
+                            return redirect(nextPage)
+                        
+                except :
+                    return redirect('dashboard')
+                    
             else:
                 messages.error(request, 'Invalid login credentials')
                 return redirect('login')
         else:
             messages.error(request, 'Invalid form submission.')
+            return redirect('login')
     else:
         form = LoginForm()
 
@@ -112,4 +160,3 @@ def logout(request):
 @login_required
 def dashboard(request):
     return render(request, 'account/dashboard.html')
-
